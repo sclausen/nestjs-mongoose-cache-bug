@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  web:
+    container_name: nestjs_web_dev
+    image: nestjs-web-dev:1.0.0
+    build:
+      context: .
+      target: development
+      dockerfile: ./Dockerfile
+    command: npm run start:debug
+    ports:
+      - 3000:3000
+      - 9229:9229
+    networks:
+      - nestjs
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: always
+    environment:
+      NODE_OPTIONS: --max_old_space_size=4096
+
+  mongodb:
+    image: mongo
+    restart: always
+    expose:
+      - "27017"
+    networks:
+      - nestjs
+    environment:
+      MONGO_INITDB_DATABASE: foo
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: foo
+    volumes:
+      - ./mongodb/init.js:/docker-entrypoint-initdb.d/init.js:ro
+      - mongodb_data:/data/db
+    command:
+      - '--logpath'
+      - '/var/log/mongodb/mongod.log'
+networks:
+  nestjs:
+volumes:
+  mongodb_data:
